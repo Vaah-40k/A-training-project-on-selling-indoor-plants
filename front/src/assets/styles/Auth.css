@@ -1,0 +1,108 @@
+.auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background:
+    radial-gradient(circle at 20% 20%, var(--color-light-green), transparent 45%),
+    radial-gradient(circle at 80% 80%, #d6e6d2, transparent 45%),
+    var(--color-bg);
+}
+
+.auth__card {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: 0 20px 50px rgba(30, 58, 43, 0.12);
+  position: relative;
+}
+
+.auth__back {
+  background: none;
+  border: none;
+  color: var(--color-green);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+  padding: 0;
+}
+.auth__back:hover { color: var(--color-dark); }
+
+.auth__title {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+.auth__subtitle {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-green);
+}
+.auth__field input {
+  padding: 12px 14px;
+  border: 1px solid #dfe6dc;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.auth__field input:focus {
+  border-color: var(--color-green);
+  box-shadow: 0 0 0 3px rgba(47, 79, 79, 0.12);
+}
+
+.auth__error {
+  color: #c0392b;
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.auth__submit {
+  justify-content: center;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.auth__success {
+  background: var(--color-light-green);
+  color: var(--color-dark);
+  border-radius: 10px;
+  padding: 18px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.auth__switch {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.88rem;
+  color: #666;
+}
+.auth__link {
+  background: none;
+  border: none;
+  color: var(--color-dark);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.88rem;
+  text-decoration: underline;
+}

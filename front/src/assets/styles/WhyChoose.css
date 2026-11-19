@@ -1,0 +1,8 @@
+.why__grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 30px; align-items: center; }
+.why__col { display: flex; flex-direction: column; gap: 30px; }
+.feature { display: flex; gap: 15px; }
+.feature__icon { width: 44px; height: 44px; border-radius: 50%; background: var(--color-light-green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.feature__icon img { width: 22px; }
+.feature__title { font-size: 1rem; margin-bottom: 5px; }
+.feature__text { font-size: 0.85rem; color: #777; }
+.why__center img { width: 100%; border-radius: var(--radius); }

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form action="" id="form">
+      <input type="text" name="login" placeholder="login" id="" />
+      <input type="text" name="email" placeholder="email" id="" />
+      <input type="tel" name="phone" placeholder="phone" id="" />
+      <input type="text" name="password" placeholder="password" id="" />
+      <input
+        type="text"
+        name="repeat_password"
+        placeholder="repeat_password"
+        id=""
+      />
+      <button type="submit">Отправить</button>
+    </form>
+
+    <script>
+      const form = document.querySelector("#form");
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+          fetch("/api/regisration_user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+        } catch (err) {
+          console.log("Ошибка-", err);
+        }
+      });
+    </script>
+  </body>
+</html>

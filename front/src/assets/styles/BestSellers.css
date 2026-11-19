@@ -1,0 +1,9 @@
+.best__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.product { background: #fff; border-radius: var(--radius); overflow: hidden; }
+.product__img { background: var(--color-light-green); }
+.product__img img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+.product__info { display: flex; justify-content: space-between; align-items: center; padding: 15px; }
+.product__name { font-size: 1rem; }
+.product__price { font-size: 0.9rem; color: #666; }
+.product__add { background: var(--color-dark); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.product__add img { width: 18px; }

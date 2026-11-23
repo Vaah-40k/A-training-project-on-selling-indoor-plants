@@ -1,4 +1,5 @@
 import '../assets/styles/Header.css';
+import { useCart } from '../context/CartContext';
 
 const logo = `data:image/svg+xml;utf8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -14,7 +15,15 @@ const cartIcon = `data:image/svg+xml;utf8,${encodeURIComponent(
   </svg>`
 )}`;
 
-const Header = ({ onRegisterClick }) => {
+const Header = ({
+  onLoginClick,
+  onRegisterClick,
+  onCartClick,
+  onAccountClick,
+  onAdminClick,
+}) => {
+  const { totalCount } = useCart();
+
   return (
     <header className="header">
       <div className="container header__inner">
@@ -24,19 +33,38 @@ const Header = ({ onRegisterClick }) => {
         </a>
 
         <nav className="header__nav">
-          <a href="#home">Home</a>
-          <a href="#shop">Shop</a>
-          <a href="#about">About Us</a>
-          <a href="#care">Plant Care</a>
-          <a href="#blog">Blog</a>
+          <a href="#home">Главная</a>
+          <a href="#shop">Магазин</a>
+          <a href="#about">О нас</a>
+          <a href="#care">Уход за растениями</a>
+          <a href="#blog">Блог</a>
         </nav>
 
         <div className="header__actions">
+          {/* ВРЕМЕННЫЕ кнопки — удалить после подключения ролей */}
+          <button className="btn btn--ghost" onClick={onAccountClick}>
+            Кабинет
+          </button>
+          <button className="btn btn--ghost" onClick={onAdminClick}>
+            Админ
+          </button>
+
+          <button className="btn btn--ghost" onClick={onLoginClick}>
+            Вход
+          </button>
           <button className="btn btn--dark" onClick={onRegisterClick}>
             Регистрация
           </button>
-          <button className="header__cart" aria-label="Корзина">
+
+          <button
+            className="header__cart"
+            onClick={onCartClick}
+            aria-label="Корзина"
+          >
             <img src={cartIcon} alt="" />
+            {totalCount > 0 && (
+              <span className="header__cart-badge">{totalCount}</span>
+            )}
           </button>
         </div>
       </div>

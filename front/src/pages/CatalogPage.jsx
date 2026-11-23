@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ProductModal from "../components/ProductModal";
+import { useCart } from "../context/CartContext";
+import { jwtDecoded } from "../utils/jwtDecoded";
 import "../assets/styles/Catalog.css";
 
-// --- ЗАГЛУШКИ для картинок (замените на реальные импорты) ---
-const placeholder = (label, color = "#e8f0e5") =>
-  `data:image/svg+xml;utf8,${encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
-      <rect width="100%" height="100%" fill="${color}"/>
-      <text x="50%" y="50%" font-family="sans-serif" font-size="22" fill="#2f4f4f" text-anchor="middle" dominant-baseline="middle">${label}</text>
-    </svg>`,
-  )}`;
+// --- Заглушки картинок ---
+// const placeholder = (label, color = "#e8f0e5") =>
+//   `data:image/svg+xml;utf8,${encodeURIComponent(
+//     `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+//       <rect width="100%" height="100%" fill="${color}"/>
+//       <text x="50%" y="50%" font-family="sans-serif" font-size="22" fill="#2f4f4f" text-anchor="middle" dominant-baseline="middle">${label}</text>
+//     </svg>`,
+//   )}`;
 
 const cartAddIcon = `data:image/svg+xml;utf8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -18,108 +21,81 @@ const cartAddIcon = `data:image/svg+xml;utf8,${encodeURIComponent(
     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
   </svg>`,
 )}`;
-// --- /ЗАГЛУШКИ ---
 
-const products = [
-  {
-    id: 1,
-    name: "Snake Plant",
-    price: "$24.99",
-    category: "Indoor",
-    img: placeholder("Snake Plant"),
-  },
-  {
-    id: 2,
-    name: "Peace Lily",
-    price: "$22.99",
-    category: "Indoor",
-    img: placeholder("Peace Lily"),
-  },
-  {
-    id: 3,
-    name: "Monstera",
-    price: "$29.99",
-    category: "Indoor",
-    img: placeholder("Monstera"),
-  },
-  {
-    id: 4,
-    name: "ZZ Plant",
-    price: "$26.99",
-    category: "Indoor",
-    img: placeholder("ZZ Plant"),
-  },
-  {
-    id: 5,
-    name: "Aloe Vera",
-    price: "$18.99",
-    category: "Succulents",
-    img: placeholder("Aloe Vera"),
-  },
-  {
-    id: 6,
-    name: "Fiddle Leaf Fig",
-    price: "$34.99",
-    category: "Indoor",
-    img: placeholder("Fiddle Leaf Fig"),
-  },
-  {
-    id: 7,
-    name: "Echeveria",
-    price: "$14.99",
-    category: "Succulents",
-    img: placeholder("Echeveria"),
-  },
-  {
-    id: 8,
-    name: "Boston Fern",
-    price: "$21.99",
-    category: "Air Purifying",
-    img: placeholder("Boston Fern"),
-  },
-  {
-    id: 9,
-    name: "Rubber Plant",
-    price: "$27.99",
-    category: "Indoor",
-    img: placeholder("Rubber Plant"),
-  },
-  {
-    id: 10,
-    name: "Lavender",
-    price: "$16.99",
-    category: "Outdoor",
-    img: placeholder("Lavender"),
-  },
-  {
-    id: 11,
-    name: "Pothos",
-    price: "$19.99",
-    category: "Air Purifying",
-    img: placeholder("Pothos"),
-  },
-  {
-    id: 12,
-    name: "Jade Plant",
-    price: "$23.99",
-    category: "Succulents",
-    img: placeholder("Jade Plant"),
-  },
-];
-
-const categories = ["All", "Indoor", "Outdoor", "Succulents", "Air Purifying"];
-
-const CatalogPage = ({ onBack, onLoginClick, onRegisterClick }) => {
-  const [activeCategory, setActiveCategory] = useState("All");
+const CatalogPage = ({
+  onBack,
+  onLoginClick,
+  onRegisterClick,
+  onCartClick,
+  onAccountClick,
+  onAdminClick,
+  onShopNow,
+}) => {
+  const [payloadUserData] = useState(() => jwtDecoded());
+  const [products, setPlants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("Все");
+  const [selected, setSelected] = useState(null);
+  const { addToCart } = useCart();
 
   const filtered =
-    activeCategory === "All"
+    activeCategory === "Все"
       ? products
       : products.filter((p) => p.category === activeCategory);
 
+  const handleAdd = (product) => {
+    addToCart(product, payloadUserData.id);
+    setSelected(null);
+  };
+  const categories = [
+    "Все",
+    ...new Set(products.map((plant) => plant.category)),
+  ];
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadPlants() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch("/api/show_plants", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        setPlants(data.plantsSendToFront);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPlants();
+
+    return () => controller.abort();
+  }, []);
+
+  if (loading) return <p>Загрузка каталога...</p>;
+  if (error) return <p>Ошибка: {error}</p>;
+
   return (
     <div className="page">
-      <Header onLoginClick={onLoginClick} onRegisterClick={onRegisterClick} />
+      <Header
+        onLoginClick={onLoginClick}
+        onRegisterClick={onRegisterClick}
+        onCartClick={onCartClick}
+        onAccountClick={onAccountClick}
+        onAdminClick={onAdminClick}
+      />
 
       <main className="catalog">
         <div className="container">
@@ -129,7 +105,7 @@ const CatalogPage = ({ onBack, onLoginClick, onRegisterClick }) => {
 
           <h1 className="catalog__title">Каталог растений</h1>
           <p className="catalog__subtitle">
-            Выберите растение по душе — фильтруйте по категориям.
+            Нажмите на карточку, чтобы посмотреть описание и уход.
           </p>
 
           <div className="catalog__filters">
@@ -148,7 +124,11 @@ const CatalogPage = ({ onBack, onLoginClick, onRegisterClick }) => {
 
           <div className="catalog__grid">
             {filtered.map((p) => (
-              <article className="catalog-card" key={p.id}>
+              <article
+                className="catalog-card"
+                id={p.id}
+                onClick={() => setSelected(p)}
+              >
                 <div className="catalog-card__img">
                   <img src={p.img} alt={p.name} />
                 </div>
@@ -160,7 +140,11 @@ const CatalogPage = ({ onBack, onLoginClick, onRegisterClick }) => {
                   </div>
                   <button
                     className="catalog-card__add"
-                    aria-label="Add to cart"
+                    aria-label="Добавить в корзину"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(p, payloadUserData.id);
+                    }}
                   >
                     <img src={cartAddIcon} alt="" />
                   </button>
@@ -172,8 +156,20 @@ const CatalogPage = ({ onBack, onLoginClick, onRegisterClick }) => {
           {filtered.length === 0 && (
             <p className="catalog__empty">В этой категории пока нет товаров.</p>
           )}
+
+          <div style={{ marginTop: 32 }}>
+            <button className="btn btn--ghost" onClick={onShopNow}>
+              Обновить каталог
+            </button>
+          </div>
         </div>
       </main>
+
+      <ProductModal
+        product={selected}
+        onClose={() => setSelected(null)}
+        onAddToCart={handleAdd}
+      />
 
       <Footer />
     </div>

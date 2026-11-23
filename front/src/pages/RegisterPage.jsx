@@ -5,6 +5,7 @@ const RegisterPage = ({ onBack, onGoLogin }) => {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     confirm: "",
   });
@@ -44,11 +45,16 @@ const RegisterPage = ({ onBack, onGoLogin }) => {
           name: form.name,
           email: form.email,
           password: form.password,
+          phone: form.phone,
           repeat_password: form.confirm,
         }),
       });
       const data = await respone.json();
-      console.log(data);
+      if (data.isValidation) {
+        localStorage.setItem("JWTtoken", data.token);
+      } else {
+        console.log(data);
+      }
     } catch (err) {
       console.log("Ошибка-", err);
     }
@@ -93,6 +99,18 @@ const RegisterPage = ({ onBack, onGoLogin }) => {
                 placeholder="you@example.com"
               />
               {errors.email && <em className="auth__error">{errors.email}</em>}
+            </label>
+
+            <label className="auth__field">
+              <span>Phone</span>
+              <input
+                type="tel"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="+7999-999-99-99"
+              />
+              {errors.phone && <em className="auth__error">{errors.phone}</em>}
             </label>
 
             <label className="auth__field">

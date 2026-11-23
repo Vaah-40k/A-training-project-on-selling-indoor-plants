@@ -28,17 +28,17 @@ const iconSupport = `data:image/svg+xml;utf8,${encodeURIComponent(
 )}`;
 
 const features = [
-  { icon: iconHealthy, title: 'Healthy Plants', text: 'We provide the healthiest plants for your space.' },
-  { icon: iconEco, title: 'Eco Friendly', text: 'Sustainable & eco friendly packaging.' },
-  { icon: iconReturns, title: 'Easy Returns', text: 'Hassle-free returns and replacement.' },
-  { icon: iconSupport, title: 'Expert Support', text: 'Get expert advice whenever you need.' },
+  { icon: iconHealthy, title: 'Здоровые растения', text: 'Мы предлагаем самые здоровые растения для вашего пространства.' },
+  { icon: iconEco, title: 'Экологичность', text: 'Экологичная и устойчивая упаковка.' },
+  { icon: iconReturns, title: 'Простой возврат', text: 'Возврат и замена без лишних хлопот.' },
+  { icon: iconSupport, title: 'Поддержка экспертов', text: 'Получите совет эксперта, когда вам это нужно.' },
 ];
 
 const WhyChoose = () => {
   return (
     <section className="why" id="about">
       <div className="container">
-        <h2 className="section-title">Why Choose GreenNest?</h2>
+        <h2 className="section-title">Почему выбирают GreenNest?</h2>
         <div className="why__grid">
           <div className="why__col">
             {features.slice(0, 2).map((f) => (
@@ -55,7 +55,7 @@ const WhyChoose = () => {
           </div>
 
           <div className="why__center">
-            <img src={centerPlant} alt="Plant" />
+            <img src={centerPlant} alt="Растение" />
           </div>
 
           <div className="why__col">

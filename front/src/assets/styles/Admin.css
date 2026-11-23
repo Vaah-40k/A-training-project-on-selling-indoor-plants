@@ -1,0 +1,196 @@
+.admin {
+  padding: 40px 0 60px;
+}
+
+.admin__back {
+  background: none;
+  border: none;
+  color: var(--color-green);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  margin-bottom: 20px;
+}
+.admin__back:hover { color: var(--color-dark); }
+
+.admin__header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(30, 58, 43, 0.06);
+  margin-bottom: 24px;
+}
+.admin__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.admin__name {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+.admin__meta {
+  font-size: 0.9rem;
+  color: #666;
+}
+.admin__logout {
+  margin-left: auto;
+}
+
+.admin__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.admin__tab {
+  border: 1px solid #dfe6dc;
+  background: #fff;
+  color: var(--color-green);
+  padding: 10px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.admin__tab:hover { border-color: var(--color-green); }
+.admin__tab.is-active {
+  background: var(--color-dark);
+  border-color: var(--color-dark);
+  color: #fff;
+}
+
+/* Статистика */
+.admin__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.admin-stat {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(30, 58, 43, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-stat__label {
+  font-size: 0.85rem;
+  color: #777;
+}
+.admin-stat__value {
+  font-size: 1.6rem;
+  color: var(--color-dark);
+}
+.admin-stat__trend {
+  font-size: 0.78rem;
+  color: var(--color-green);
+}
+
+/* Двухколоночная сетка */
+.admin__grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.admin-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 4px 16px rgba(30, 58, 43, 0.06);
+}
+.admin-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.admin-card__title {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+.admin-card__head .admin-card__title { margin-bottom: 0; }
+
+/* Таблицы */
+.admin-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-table__row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.6fr 1fr 1fr;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.88rem;
+  color: #555;
+  padding: 10px 6px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.admin-table__row:last-child { border-bottom: none; }
+
+.admin-table--products .admin-table__row {
+  grid-template-columns: 48px 1.6fr 1fr 0.8fr 0.8fr 1fr;
+}
+.admin-table--orders .admin-table__row {
+  grid-template-columns: 1fr 1.4fr 1fr 0.8fr 1fr;
+}
+.admin-table--users .admin-table__row {
+  grid-template-columns: 1.4fr 1.8fr 1fr 0.8fr 1fr;
+}
+
+.admin-table__strong {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+.admin-table__thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--color-light-green);
+}
+
+/* Бейджи статусов */
+.admin-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  justify-self: start;
+}
+.admin-badge.is-done {
+  background: var(--color-light-green);
+  color: var(--color-dark);
+}
+.admin-badge.is-progress {
+  background: #fff3cd;
+  color: #8a6d3b;
+}
+.admin-badge.is-danger {
+  background: #fbe3e1;
+  color: #c0392b;
+}
+
+@media (max-width: 1024px) {
+  .admin__stats { grid-template-columns: repeat(2, 1fr); }
+  .admin__grid-2 { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .admin__header { flex-wrap: wrap; }
+  .admin__logout { margin-left: 0; }
+  .admin-table__row {
+    grid-template-columns: 1fr 1fr !important;
+    row-gap: 6px;
+  }
+  .admin-table__thumb { display: none; }
+}

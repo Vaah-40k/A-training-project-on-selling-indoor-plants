@@ -7,18 +7,18 @@ import care from '../assets/img/1.jpg';
 
 
 const categories = [
-  { img: indoor, name: 'Indoor Plants' },
-  { img: outdoor, name: 'Outdoor Plants' },
-  { img: succulents, name: 'Succulents' },
-  { img: airpurifying, name: 'Air Purifying' },
-  { img: care, name: 'Plant Care' },
+  { img: indoor, name: 'Комнатные растения' },
+  { img: outdoor, name: 'Садовые растения' },
+  { img: succulents, name: 'Суккуленты' },
+  { img: airpurifying, name: 'Очищающие воздух' },
+  { img: care, name: 'Уход за растениями' },
 ];
 
 const Categories = () => {
   return (
     <section className="categories" id="shop">
       <div className="container">
-        <h2 className="section-title">Our Categories</h2>
+        <h2 className="section-title">Наши категории</h2>
         <div className="categories__grid">
           {categories.map((c) => (
             <a href="#shop" className="category" key={c.name}>

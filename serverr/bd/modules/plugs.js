@@ -1,29 +1,45 @@
 const { DataTypes } = require("sequelize");
 module.exports = function (sequelize) {
   return sequelize.define(
-    "plugPlantts",
+    "plants",
     {
-      id: {
+      id_plant: {
         primaryKey: true,
         autoIncrement: true,
         type: DataTypes.INTEGER,
+      },
+      type: {
+        type: DataTypes.STRING,
       },
       name: {
         type: DataTypes.STRING,
       },
       price: {
+        type: DataTypes.FLOAT,
+      },
+
+      description: {
         type: DataTypes.STRING,
       },
 
-      category: {
+      light: {
         type: DataTypes.STRING,
       },
-      img: {
+      watering: {
+        type: DataTypes.STRING,
+      },
+      humidity: {
+        type: DataTypes.STRING,
+      },
+      temperature: {
+        type: DataTypes.STRING,
+      },
+      url_link: {
         type: DataTypes.STRING,
       },
     },
     {
-      tableName: "plugPlantts",
+      tableName: "plants",
       timestamps: false,
     },
   );

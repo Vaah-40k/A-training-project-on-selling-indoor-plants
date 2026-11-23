@@ -40,6 +40,11 @@ const LoginPage = ({ onBack, onGoRegister }) => {
       });
       const data = await respone.json();
       console.log(data);
+      if (data.isValidation) {
+        localStorage.setItem("JWTtoken", data.token);
+      } else {
+        console.log(data);
+      }
     } catch (err) {
       console.log("Ошибка-", err);
     }

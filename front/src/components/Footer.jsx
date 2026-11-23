@@ -56,28 +56,28 @@ const Footer = () => {
           <div className="advantage">
             <img src={iconShipping} alt="" />
             <div>
-              <strong>Free Shipping</strong>
-              <span>On all orders over $50</span>
+              <strong>Бесплатная доставка</strong>
+              <span>На все заказы от $50</span>
             </div>
           </div>
           <div className="advantage">
             <img src={iconPayment} alt="" />
             <div>
-              <strong>Secure Payment</strong>
-              <span>100% secure payment</span>
+              <strong>Безопасная оплата</strong>
+              <span>100% безопасная оплата</span>
             </div>
           </div>
           <div className="advantage">
             <img src={iconSupport} alt="" />
             <div>
-              <strong>24/7 Support</strong>
-              <span>We are here to help</span>
+              <strong>Поддержка 24/7</strong>
+              <span>Мы всегда готовы помочь</span>
             </div>
           </div>
         </div>
 
         <div className="footer__bottom">
-          <p>© 2026 GreenNest. All rights reserved.</p>
+          <p>© 2026 GreenNest. Все права защищены.</p>
           <div className="footer__social">
             <a href="#fb"><img src={iconFacebook} alt="Facebook" /></a>
             <a href="#ig"><img src={iconInstagram} alt="Instagram" /></a>

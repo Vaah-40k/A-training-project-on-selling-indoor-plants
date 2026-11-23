@@ -33,10 +33,10 @@ const iconRating = `data:image/svg+xml;utf8,${encodeURIComponent(
 )}`;
 
 const stats = [
-  { icon: iconCustomers, value: '1,000+', label: 'Happy Customers' },
-  { icon: iconPlants, value: '4,500+', label: 'Plants Sold' },
-  { icon: iconVarieties, value: '520+', label: 'Plant Varieties' },
-  { icon: iconRating, value: '4.8★', label: 'Customer Rating' },
+  { icon: iconCustomers, value: '1,000+', label: 'Довольных клиентов' },
+  { icon: iconPlants, value: '4,500+', label: 'Проданных растений' },
+  { icon: iconVarieties, value: '520+', label: 'Видов растений' },
+  { icon: iconRating, value: '4.8★', label: 'Рейтинг клиентов' },
 ];
 
 const Hero = ({ onShopNow }) => {
@@ -49,17 +49,17 @@ const Hero = ({ onShopNow }) => {
       <div className="container hero__inner">
         <div className="hero__content">
           <h1 className="hero__title">
-            Bring Nature<br />Into Your Home
+            Привнесите природу<br />в свой дом
           </h1>
           <p className="hero__text">
-            Beautiful indoor plants that purify air and make your space livelier.
+            Красивые комнатные растения, которые очищают воздух и делают ваше пространство живее.
           </p>
           <div className="hero__buttons">
             <button className="btn btn--dark" onClick={onShopNow}>
-              Shop Now
+              Купить сейчас
             </button>
             <button className="btn btn--ghost">
-              <span className="hero__play">▶</span> Watch Video
+              <span className="hero__play">▶</span> Смотреть видео
             </button>
           </div>
         </div>

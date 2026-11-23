@@ -20,21 +20,21 @@ const PlantCare = () => {
       <div className="container">
         <div className="plant-care__banner" style={{ backgroundImage: `url(${bannerBg})` }}>
           <div className="plant-care__content">
-            <h2>Plant Care<br />Made Simple</h2>
-            <p>Tips and guides to help your plants grow better.</p>
-            <button className="btn btn--light">Explore Guides</button>
+            <h2>Уход за растениями<br />— это просто</h2>
+            <p>Советы и руководства, которые помогут вашим растениям расти лучше.</p>
+            <button className="btn btn--light">Смотреть руководства</button>
           </div>
 
           <div className="plant-care__cards">
             <div className="care-card">
               <img src={iconWater} alt="" />
-              <h3>Watering Guide</h3>
-              <p>Learn how much water your plants really need.</p>
+              <h3>Руководство по поливу</h3>
+              <p>Узнайте, сколько воды на самом деле нужно вашим растениям.</p>
             </div>
             <div className="care-card">
               <img src={iconCare} alt="" />
-              <h3>Care Tips</h3>
-              <p>Best tips for happy and healthy plants.</p>
+              <h3>Советы по уходу</h3>
+              <p>Лучшие советы для счастливых и здоровых растений.</p>
             </div>
           </div>
         </div>

@@ -6,8 +6,14 @@ const sequelize = new Sequelize("indoor_plants", "root", "", {
 });
 
 const userModules = require("./modules/user")(sequelize);
-const plugPlantts = require("./modules/plugPlantts")(sequelize);
+const plugs = require("./modules/plugs")(sequelize);
+const basket = require("./modules/basket")(sequelize);
+const purchasesModules = require("./modules/purchases")(sequelize);
+
+basket.belongsTo(plugs, { foreignKey: "id_plant" });
 module.exports = {
   userModules,
-  plugPlantts,
+  plugs,
+  basket,
+  purchasesModules,
 };

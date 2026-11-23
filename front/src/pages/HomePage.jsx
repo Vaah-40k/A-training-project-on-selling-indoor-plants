@@ -6,13 +6,24 @@ import PlantCare from '../components/PlantCare';
 import BestSellers from '../components/BestSellers';
 import Footer from '../components/Footer';
 
-const HomePage = ({ onLoginClick, onRegisterClick, onShopNow }) => {
+const HomePage = ({
+  onLoginClick,
+  onRegisterClick,
+  onCartClick,
+  onAccountClick,
+  onAdminClick,
+  onShopNow,
+}) => {
   return (
     <div className="page">
       <Header
         onLoginClick={onLoginClick}
         onRegisterClick={onRegisterClick}
+        onCartClick={onCartClick}
+        onAccountClick={onAccountClick}
+        onAdminClick={onAdminClick}
       />
+
       <main>
         <Hero onShopNow={onShopNow} />
         <Categories />
@@ -20,6 +31,7 @@ const HomePage = ({ onLoginClick, onRegisterClick, onShopNow }) => {
         <PlantCare />
         <BestSellers />
       </main>
+
       <Footer />
     </div>
   );

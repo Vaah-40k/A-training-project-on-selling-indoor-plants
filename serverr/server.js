@@ -80,7 +80,11 @@ app.post("/api/autarization", async (req, res) => {
 });
 app.get("/api/show_all_users", async (req, res) => {
   try {
-    const allUserData = await userModules.findAll();
+    const allUserData = await userModules.findAll({
+      attributes: {
+        exclude: ["password"],
+      },
+    });
     if (allUserData.length == 0) {
       return res
         .status(500)
@@ -187,12 +191,16 @@ app.post("/api/show_user_basket", async (req, res) => {
 app.post("/api/add_purchases_user", async (req, res) => {
   try {
     const { id_user, items } = req.body;
+    const total_sum = items.reduce(
+      (sum, item) => sum + item.price * item.qty,
+      0,
+    );
 
     const purchases = await purchasesModules.create({
       id_user,
       plants_data: JSON.stringify(items),
       status: "В обработке",
-      total_sum: 1000,
+      total_sum,
     });
 
     await basket.destroy({ where: { id_user } });

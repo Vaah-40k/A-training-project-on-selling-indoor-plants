@@ -14,33 +14,35 @@ const avatarPlaceholder = (label) =>
     </svg>`,
   )}`;
 
-const mockpurchases = [
-  {
-    id: "GN-1042",
-    date: "18.11.2026",
-    status: "Доставлен",
-    total: "$49.98",
-    items: ["Snake Plant", "Peace Lily"],
-  },
-  {
-    id: "GN-1031",
-    date: "02.11.2026",
-    status: "В пути",
-    total: "$29.99",
-    items: ["Monstera"],
-  },
-  {
-    id: "GN-1015",
-    date: "21.10.2026",
-    status: "Доставлен",
-    total: "$52.98",
-    items: ["ZZ Plant", "Aloe Vera"],
-  },
-];
+// const mockpurchases = [
+//   {
+//     id: "GN-1042",
+//     date: "18.11.2026",
+//     status: "Доставлен",
+//     total: "$49.98",
+//     items: ["Snake Plant", "Peace Lily"],
+//   },
+//   {
+//     id: "GN-1031",
+//     date: "02.11.2026",
+//     status: "В пути",
+//     total: "$29.99",
+//     items: ["Monstera"],
+//   },
+//   {
+//     id: "GN-1015",
+//     date: "21.10.2026",
+//     status: "Доставлен",
+//     total: "$52.98",
+//     items: ["ZZ Plant", "Aloe Vera"],
+//   },
+// ];
 
 const AccountPage = ({ onBack, ...headerProps }) => {
   const [payload, setPayload] = useState(() => jwtDecoded());
+  const [mockpurchases, setMockpurchasess] = useState(null);
   const { totalCount } = useCart();
+  const [allDataPurchases, setDataAllPurchases] = useState(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -51,8 +53,6 @@ const AccountPage = ({ onBack, ...headerProps }) => {
 
   const [page, setPage] = useState(1);
   const PER_PAGE = 3;
-
-  const [dataAllPurchases, setDataAllPurchases] = useState(null);
 
   const startEditing = () => {
     setFormData({
@@ -97,23 +97,34 @@ const AccountPage = ({ onBack, ...headerProps }) => {
   };
 
   useEffect(() => {
-    const fetchPurchases = async () => {
+    const fetchAndProcessPurchases = async () => {
       try {
         const response = await fetch(
           `/api/show_all_purchases_user/${payload.id}`,
-          {},
         );
         const data = await response.json();
-        setDataAllPurchases(data);
+
+        if (data.userDataOnBD && data.userDataOnBD.length > 0) {
+          const formattedData = data.userDataOnBD.map((order) => ({
+            id: order.id_purchases,
+            date: new Date(order.createdAt).toLocaleDateString("ru-RU"),
+            status: order.status,
+            total: order.total_sum,
+            items: order.plants_data.map((plant) => plant.name),
+          }));
+          setMockpurchasess(formattedData);
+        } else {
+          setMockpurchasess([]);
+        }
       } catch (err) {
-        console.log("Ошибка чтения заказов, повторите попытку позже", -err);
+        console.log("Ошибка чтения заказов", err);
+        setMockpurchasess([]);
       }
     };
 
-    fetchPurchases();
-  }, []);
-
-  console.log(dataAllPurchases);
+    fetchAndProcessPurchases();
+  }, [payload.id]);
+  console.log(mockpurchases);
 
   return (
     <div className="page">
@@ -124,7 +135,6 @@ const AccountPage = ({ onBack, ...headerProps }) => {
           <button className="account__back" onClick={onBack}>
             ← Вернуться на главную
           </button>
-
           <div className="account__header">
             <img
               className="account__avatar"
@@ -142,7 +152,7 @@ const AccountPage = ({ onBack, ...headerProps }) => {
               Выйти
             </button>
           </div>
-
+          ``
           <div className="account__grid">
             <section className="account-card">
               <h2 className="account-card__title">Личные данные</h2>
@@ -217,14 +227,14 @@ const AccountPage = ({ onBack, ...headerProps }) => {
 
             <section className="account-card account__purchases">
               <h2 className="account-card__title">Заказы</h2>
-              {mockpurchases.length === 0 ? (
+              {!mockpurchases?.length ? (
                 <p className="account__empty">Заказов пока нет.</p>
               ) : (
                 <>
                   {mockpurchases
                     .slice((page - 1) * PER_PAGE, page * PER_PAGE)
                     .map((o) => (
-                      <article className="order" key={o.id}>
+                      <article className="order" id={o.id}>
                         <div className="order__head">
                           <div>
                             <h3 className="order__id">Заказ {o.id}</h3>
@@ -232,7 +242,9 @@ const AccountPage = ({ onBack, ...headerProps }) => {
                           </div>
                           <span
                             className={`order__status ${
-                              o.status === "Доставлен" ? "is-done" : "is-progress"
+                              o.status === "Доставлен"
+                                ? "is-done"
+                                : "is-progress"
                             }`}
                           >
                             {o.status}
@@ -240,7 +252,7 @@ const AccountPage = ({ onBack, ...headerProps }) => {
                         </div>
                         <p className="order__items">{o.items.join(", ")}</p>
                         <div className="order__foot">
-                          <span>Сумма: {o.total}</span>
+                          <span>Сумма: ${o.total}</span>
                           <button className="btn btn--ghost">Подробнее</button>
                         </div>
                       </article>

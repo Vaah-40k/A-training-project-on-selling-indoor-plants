@@ -37,28 +37,54 @@ const mockStats = [
 ];
 
 const mockProducts = [
-  { id: 1, name: "Snake Plant", price: "$24.99", category: "Indoor", stock: 34, status: "Активен" },
-  { id: 2, name: "Peace Lily", price: "$22.99", category: "Indoor", stock: 12, status: "Активен" },
-  { id: 3, name: "Monstera", price: "$29.99", category: "Indoor", stock: 0, status: "Нет в наличии" },
-  { id: 4, name: "ZZ Plant", price: "$26.99", category: "Indoor", stock: 21, status: "Активен" },
-  { id: 5, name: "Aloe Vera", price: "$18.99", category: "Succulents", stock: 48, status: "Активен" },
-  { id: 6, name: "Lavender", price: "$16.99", category: "Outdoor", stock: 5, status: "Мало на складе" },
-];
-
-const mockOrders = [
-  { id: "GN-1042", user: "Иван Зелёный", date: "18.11.2026", total: "$49.98", status: "Доставлен" },
-  { id: "GN-1041", user: "Мария Цветова", date: "18.11.2026", total: "$29.99", status: "В пути" },
-  { id: "GN-1040", user: "Пётр Листов", date: "17.11.2026", total: "$76.97", status: "Обрабатывается" },
-  { id: "GN-1039", user: "Ольга Росток", date: "17.11.2026", total: "$22.99", status: "Доставлен" },
-  { id: "GN-1038", user: "Сергей Куст", date: "16.11.2026", total: "$18.99", status: "Отменён" },
-];
-
-const mockUsers = [
-  { id: 1, name: "Иван Зелёный", email: "ivan@greennest.com", role: "Покупатель", orders: 8, joined: "12.03.2026" },
-  { id: 2, name: "Мария Цветова", email: "maria@greennest.com", role: "Покупатель", orders: 3, joined: "02.05.2026" },
-  { id: 3, name: "Пётр Листов", email: "petr@greennest.com", role: "Покупатель", orders: 12, joined: "21.01.2026" },
-  { id: 4, name: "Анна Админова", email: "admin@greennest.com", role: "Администратор", orders: 0, joined: "01.01.2026" },
-  { id: 5, name: "Ольга Росток", email: "olga@greennest.com", role: "Покупатель", orders: 5, joined: "14.07.2026" },
+  {
+    id: 1,
+    name: "Snake Plant",
+    price: "$24.99",
+    category: "Indoor",
+    stock: 34,
+    status: "Активен",
+  },
+  {
+    id: 2,
+    name: "Peace Lily",
+    price: "$22.99",
+    category: "Indoor",
+    stock: 12,
+    status: "Активен",
+  },
+  {
+    id: 3,
+    name: "Monstera",
+    price: "$29.99",
+    category: "Indoor",
+    stock: 0,
+    status: "Нет в наличии",
+  },
+  {
+    id: 4,
+    name: "ZZ Plant",
+    price: "$26.99",
+    category: "Indoor",
+    stock: 21,
+    status: "Активен",
+  },
+  {
+    id: 5,
+    name: "Aloe Vera",
+    price: "$18.99",
+    category: "Succulents",
+    stock: 48,
+    status: "Активен",
+  },
+  {
+    id: 6,
+    name: "Lavender",
+    price: "$16.99",
+    category: "Outdoor",
+    stock: 5,
+    status: "Мало на складе",
+  },
 ];
 
 const statusClass = (status) => {
@@ -74,37 +100,65 @@ const statusClass = (status) => {
 
 const AdminPage = ({ onBack, ...headerProps }) => {
   const [tab, setTab] = useState("dashboard");
-  const [dataAllPurchases, setDataAllPurchases] = useState(null);
-  const [dataAllUsers, setDataAllUsers] = useState(null);
+  const [dataAllPurchases, setDataAllPurchases] = useState([]);
+  const [dataAllUsers, setDataAllUsers] = useState([]);
 
   useEffect(() => {
-    const fetchPurchases = async () => {
-      const adminId = -1;
+    const fetchData = async () => {
       try {
-        const response = await fetch(
-          `/api/show_all_purchases_user/${adminId}`,
-          {},
+        const [usersResponse, purchasesResponse] = await Promise.all([
+          fetch("/api/show_all_users"),
+          fetch(`/api/show_all_purchases_user/-1`),
+        ]);
+
+        const usersData = await usersResponse.json();
+        const purchasesData = await purchasesResponse.json();
+
+        const formattedDataUser = usersData.allUserData.map((item) => {
+          const userOrdersCount = purchasesData.userDataOnBD.filter(
+            (order) => order.id_user === item.id_user,
+          ).length;
+          return {
+            email: item.email,
+            id_user: item.id_user,
+            joined: "12",
+            name: item.name,
+            orders: userOrdersCount,
+            role: "Покупатель",
+          };
+        });
+        setDataAllUsers(formattedDataUser);
+
+        const formattedDataPurchases = purchasesData.userDataOnBD.map(
+          (order) => {
+            const foundUser = usersData.allUserData.find(
+              (u) => u.id_user === order.id_user,
+            );
+            const dataOfYears = new Date(order.createdAt);
+            const readable = dataOfYears.toLocaleString("ru-RU");
+
+            return {
+              date: readable || "Дата неизвестна",
+              id_purchases: order.id_purchases,
+              status: order.status,
+              total: order.total_sum,
+              id_user: order.id_user,
+              user: foundUser ? foundUser.name : "Неизвестный",
+            };
+          },
         );
-        const data = await response.json();
-        setDataAllPurchases(data);
+
+        setDataAllPurchases(formattedDataPurchases);
       } catch (err) {
-        console.log("Ошибка чтения заказов, повторите попытку позже", -err);
+        console.error("Ошибка чтения данных:", err);
       }
     };
 
-    fetchPurchases();
-
-    const fetchGetAllUser = async () => {
-      const respone = await fetch("/api/show_all_users");
-      const data = await respone.json();
-      setDataAllUsers(data);
-    };
-    fetchGetAllUser();
+    fetchData();
   }, []);
 
   console.log(dataAllPurchases);
   console.log(dataAllUsers);
-
   return (
     <div className="page">
       <Header {...headerProps} />
@@ -136,11 +190,11 @@ const AdminPage = ({ onBack, ...headerProps }) => {
               ["products", "Товары"],
               ["orders", "Заказы"],
               ["users", "Пользователи"],
-            ].map(([key, label]) => (
+            ].map(([id, label]) => (
               <button
-                key={key}
-                className={`admin__tab ${tab === key ? "is-active" : ""}`}
-                onClick={() => setTab(key)}
+                id={id}
+                className={`admin__tab ${tab === id ? "is-active" : ""}`}
+                onClick={() => setTab(id)}
               >
                 {label}
               </button>
@@ -151,7 +205,7 @@ const AdminPage = ({ onBack, ...headerProps }) => {
             <>
               <div className="admin__stats">
                 {mockStats.map((s) => (
-                  <div className="admin-stat" key={s.label}>
+                  <div className="admin-stat" id={s.label}>
                     <span className="admin-stat__label">{s.label}</span>
                     <strong className="admin-stat__value">{s.value}</strong>
                     <span className="admin-stat__trend">{s.trend}</span>
@@ -163,9 +217,11 @@ const AdminPage = ({ onBack, ...headerProps }) => {
                 <section className="admin-card">
                   <h2 className="admin-card__title">Последние заказы</h2>
                   <div className="admin-table">
-                    {mockOrders.slice(0, 4).map((o) => (
-                      <div className="admin-table__row" key={o.id}>
-                        <span className="admin-table__strong">{o.id}</span>
+                    {dataAllPurchases.slice(0, 4).map((o) => (
+                      <div className="admin-table__row" id={o.id_purchases}>
+                        <span className="admin-table__strong">
+                          {o.id_purchases}
+                        </span>
                         <span>{o.user}</span>
                         <span>{o.total}</span>
                         <span
@@ -181,8 +237,8 @@ const AdminPage = ({ onBack, ...headerProps }) => {
                 <section className="admin-card">
                   <h2 className="admin-card__title">Новые пользователи</h2>
                   <div className="admin-table">
-                    {mockUsers.slice(0, 4).map((u) => (
-                      <div className="admin-table__row" key={u.id}>
+                    {dataAllUsers.slice(0, 4).map((u) => (
+                      <div className="admin-table__row" id={u.id_user}>
                         <span className="admin-table__strong">{u.name}</span>
                         <span>{u.email}</span>
                         <span>{u.role}</span>
@@ -202,7 +258,7 @@ const AdminPage = ({ onBack, ...headerProps }) => {
               </div>
               <div className="admin-table admin-table--products">
                 {mockProducts.map((p) => (
-                  <div className="admin-table__row" key={p.id}>
+                  <div className="admin-table__row" id={p.id}>
                     <img
                       className="admin-table__thumb"
                       src={productPlaceholder(p.name.split(" ")[0])}
@@ -225,9 +281,11 @@ const AdminPage = ({ onBack, ...headerProps }) => {
             <section className="admin-card">
               <h2 className="admin-card__title">Заказы</h2>
               <div className="admin-table admin-table--orders">
-                {mockOrders.map((o) => (
-                  <div className="admin-table__row" key={o.id}>
-                    <span className="admin-table__strong">{o.id}</span>
+                {dataAllPurchases.map((o) => (
+                  <div className="admin-table__row" id={o.id_purchases}>
+                    <span className="admin-table__strong">
+                      Id заказа: {o.id_purchases}
+                    </span>
                     <span>{o.user}</span>
                     <span>{o.date}</span>
                     <span>{o.total}</span>
@@ -244,8 +302,8 @@ const AdminPage = ({ onBack, ...headerProps }) => {
             <section className="admin-card">
               <h2 className="admin-card__title">Пользователи</h2>
               <div className="admin-table admin-table--users">
-                {mockUsers.map((u) => (
-                  <div className="admin-table__row" key={u.id}>
+                {dataAllUsers.map((u) => (
+                  <div className="admin-table__row" id={u.id_user}>
                     <span className="admin-table__strong">{u.name}</span>
                     <span>{u.email}</span>
                     <span>{u.role}</span>

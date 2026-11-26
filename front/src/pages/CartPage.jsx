@@ -1,30 +1,51 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { jwtDecoded } from "../utils/jwtDecoded";
 import { useCart } from "../context/CartContext";
 import "../assets/styles/Cart.css";
 
-// TODO: заменить на полноценную гостевую корзину (localStorage / guest-токен)
-const GUEST_ID = 10000000;
+async function readResponse(response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
 
 const CartPage = ({ onBack, onShopNow, onRequireAuth, ...headerProps }) => {
-  const { clearCart } = useCart();
-  const [items, setItems] = useState([]);
+  const {
+    items,
+    changeQty: changeCartQty,
+    removeFromCart: removeCartItem,
+    replaceCart,
+    clearCart,
+    totalPrice,
+  } = useCart();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [ordering, setOrdering] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
+  const JWTtoken = localStorage.getItem("JWTtoken");
   const user = jwtDecoded();
-  const id_user = user?.id_user || user?.id || GUEST_ID;
+  const id_user = user?.id_user ?? user?.id ?? null;
+  const isAuthenticated = Boolean(JWTtoken && id_user !== null);
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function loadBasket() {
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
+        setError(null);
+
         const response = await fetch("/api/show_user_basket", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -32,96 +53,174 @@ const CartPage = ({ onBack, onShopNow, onRequireAuth, ...headerProps }) => {
           signal: controller.signal,
         });
 
-        const resData = await response.json();
+        const resData = await readResponse(response);
 
-        if (resData.message === "Ваша корзина пуста") {
-          setItems([]);
-        } else if (response.ok) {
-          const formattedItems = resData.data.map((item) => ({
-            id: item.id_plant,
-            qty: item.count_plant,
-            name: item["plant.name"] || "Неизвестное растение",
-            price: item["plant.price"] || "$0.00",
-            img: item["plant.url_link"] || "/img/placeholder.jpg",
-          }));
-          setItems(formattedItems);
-        } else {
-          throw new Error(resData.message || "Ошибка при загрузке");
+        if (!response.ok) {
+          throw new Error(resData.message || "Не удалось загрузить корзину");
         }
+
+        if (
+          resData.message === "Ваша корзина пуста" ||
+          !Array.isArray(resData.data)
+        ) {
+          replaceCart([]);
+          return;
+        }
+
+        const formattedItems = resData.data.map((item) => ({
+          id: item.id_plant,
+          qty: Number(item.count_plant) || 1,
+          name: item["plant.name"] || "Неизвестное растение",
+          price: Number(item["plant.price"]) || 0,
+          img: item["plant.url_link"] || "/img/placeholder.jpg",
+        }));
+
+        replaceCart(formattedItems);
       } catch (err) {
         if (err.name !== "AbortError") {
-          setError(err.message);
+          setError(err.message || "Ошибка при загрузке корзины");
         }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     }
 
     loadBasket();
-    return () => controller.abort();
-  }, [id_user]);
 
-  const totalPrice = items.reduce((sum, i) => sum + i.qty, 0);
+    return () => controller.abort();
+  }, [id_user, isAuthenticated, replaceCart]);
 
   const changeQty = async (id_plant, delta) => {
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === id_plant ? { ...i, qty: Math.max(1, i.qty + delta) } : i,
-      ),
+    const currentItem = items.find(
+      (item) => String(item.id) === String(id_plant),
     );
-    const respone = await fetch("/api/update_user_basket", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_user, id_plant, delta }),
-    });
-    console.log(await respone.json());
+
+    if (!currentItem || currentItem.qty + delta < 1) {
+      return;
+    }
+
+    if (!isAuthenticated) {
+      changeCartQty(id_plant, delta);
+      return;
+    }
+
+    try {
+      setError(null);
+
+      const response = await fetch("/api/update_user_basket", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_user, id_plant, delta }),
+      });
+
+      const data = await readResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Не удалось изменить количество");
+      }
+
+      changeCartQty(id_plant, delta);
+    } catch (err) {
+      setError(err.message || "Ошибка изменения количества");
+    }
   };
 
   const removeFromCart = async (id_plant) => {
-    setItems((prev) => prev.filter((i) => i.id !== id_plant));
-    const respone = await fetch("/api/remove_plant_in_basket", {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_user, id_plant }),
-    });
-    console.log(await respone.json());
+    if (!isAuthenticated) {
+      removeCartItem(id_plant);
+      return;
+    }
+
+    try {
+      setError(null);
+
+      const response = await fetch("/api/remove_plant_in_basket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_user, id_plant }),
+      });
+
+      const data = await readResponse(response);
+
+      if (!response.ok) {
+        throw new Error(data.message || "Не удалось удалить товар");
+      }
+
+      removeCartItem(id_plant);
+    } catch (err) {
+      setError(err.message || "Ошибка удаления товара");
+    }
   };
 
   const removeAllBasket = async () => {
-    const respone = await fetch("/api/remove_all_basket", {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id_user }),
-    });
-    console.log(await respone.json());
+    if (isAuthenticated) {
+      try {
+        setError(null);
+
+        const response = await fetch("/api/remove_all_basket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_user }),
+        });
+
+        const data = await readResponse(response);
+
+        if (!response.ok) {
+          throw new Error(data.message || "Не удалось очистить корзину");
+        }
+      } catch (err) {
+        setError(err.message || "Ошибка очистки корзины");
+        return;
+      }
+    }
+
     clearCart();
   };
 
   const addPurchases = async () => {
-    if (ordering || items.length === 0) return;
+    console.log(items);
+    if (ordering || items.length === 0) {
+      return;
+    }
+
     setOrdering(true);
     setError(null);
 
     try {
       const response = await fetch("/api/add_purchases_user", {
-        method: "post",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id_user, items }),
       });
 
+      const data = await readResponse(response);
+
       if (!response.ok) {
-        let serverMessage = "Не удалось оформить заказ";
-        try {
-          const data = await response.json();
-          if (data?.message) serverMessage = data.message;
-        } catch {
-          /* ignore */
-        }
-        throw new Error(serverMessage);
+        throw new Error(data.message || "Не удалось оформить заказ");
       }
 
-      await removeAllBasket();
-      setItems([]);
+      clearCart();
+
+      try {
+        const clearResponse = await fetch("/api/remove_all_basket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id_user }),
+        });
+        const clearData = await readResponse(clearResponse);
+
+        if (!clearResponse.ok) {
+          setError(
+            clearData.message ||
+              "Заказ создан, но серверную корзину не удалось очистить.",
+          );
+        }
+      } catch (clearError) {
+        setError("Заказ создан, но серверную корзину не удалось очистить.");
+      }
+
       setOrderSuccess(true);
     } catch (err) {
       setError(err.message || "Ошибка оформления заказа");
@@ -131,12 +230,15 @@ const CartPage = ({ onBack, onShopNow, onRequireAuth, ...headerProps }) => {
   };
 
   const handleCheckout = () => {
-    if (!user) {
-      onRequireAuth?.(
-        "Чтобы оформить заказ, пожалуйста, зарегистрируйтесь или войдите в аккаунт.",
-      );
+    if (items.length === 0) {
       return;
     }
+
+    if (!isAuthenticated) {
+      onRequireAuth?.();
+      return;
+    }
+
     addPurchases();
   };
 
@@ -173,6 +275,11 @@ const CartPage = ({ onBack, onShopNow, onRequireAuth, ...headerProps }) => {
               <p className="cart__success-text">
                 Спасибо за покупку. Мы свяжемся с вами в ближайшее время.
               </p>
+              {error && (
+                <p style={{ color: "#b45309", marginBottom: "16px" }}>
+                  {error}
+                </p>
+              )}
               <button className="btn btn--dark" onClick={onShopNow}>
                 Продолжить покупки
               </button>
@@ -195,26 +302,36 @@ const CartPage = ({ onBack, onShopNow, onRequireAuth, ...headerProps }) => {
               ) : (
                 <div className="cart__layout">
                   <div className="cart__list">
-                    {items.map((i) => (
-                      <article className="cart-item" key={i.id} id={i.id}>
+                    {items.map((item) => (
+                      <article className="cart-item" id={item.id} id={item.id}>
                         <div className="cart-item__img">
-                          <img src={i.img} alt={i.name} />
+                          <img src={item.img} alt={item.name} />
                         </div>
+
                         <div className="cart-item__info">
-                          <h3 className="cart-item__name">{i.name}</h3>
-                          <span className="cart-item__price">{i.price}</span>
+                          <h3 className="cart-item__name">{item.name}</h3>
+                          <span className="cart-item__price">
+                            ${Number(item.price || 0).toFixed(2)}
+                          </span>
                         </div>
+
                         <div className="cart-item__qty">
-                          <button onClick={() => changeQty(i.id, -1)}>−</button>
-                          <span>{i.qty}</span>
-                          <button onClick={() => changeQty(i.id, 1)}>+</button>
+                          <button onClick={() => changeQty(item.id, -1)}>
+                            −
+                          </button>
+                          <span>{item.qty}</span>
+                          <button onClick={() => changeQty(item.id, 1)}>
+                            +
+                          </button>
                         </div>
+
                         <div className="cart-item__subtotal">
-                          ${i.qty.toFixed(2)}
+                          ${(Number(item.price || 0) * item.qty).toFixed(2)}
                         </div>
+
                         <button
                           className="cart-item__remove"
-                          onClick={() => removeFromCart(i.id)}
+                          onClick={() => removeFromCart(item.id)}
                           aria-label="Удалить"
                         >
                           ✕
@@ -222,33 +339,31 @@ const CartPage = ({ onBack, onShopNow, onRequireAuth, ...headerProps }) => {
                       </article>
                     ))}
 
-                    <button
-                      className="cart__clear"
-                      onClick={() => {
-                        removeAllBasket();
-                        setItems([]);
-                      }}
-                    >
+                    <button className="cart__clear" onClick={removeAllBasket}>
                       Очистить корзину
                     </button>
                   </div>
 
                   <aside className="cart__summary">
                     <h2 className="cart__summary-title">Итого</h2>
+
                     <div className="cart__summary-row">
                       <span>Товары</span>
                       <span>
-                        {items.reduce((sum, i) => sum + i.qty, 0)} шт.
+                        {items.reduce((sum, item) => sum + item.qty, 0)} шт.
                       </span>
                     </div>
+
                     <div className="cart__summary-row">
                       <span>Доставка</span>
                       <span>Бесплатно</span>
                     </div>
+
                     <div className="cart__summary-row cart__summary-row--total">
                       <span>Сумма</span>
                       <span>${totalPrice.toFixed(2)}</span>
                     </div>
+
                     <button
                       className="btn btn--dark cart__checkout"
                       onClick={handleCheckout}

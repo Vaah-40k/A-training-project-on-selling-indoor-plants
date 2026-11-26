@@ -6,24 +6,10 @@ import PlantCare from '../components/PlantCare';
 import BestSellers from '../components/BestSellers';
 import Footer from '../components/Footer';
 
-const HomePage = ({
-  onLoginClick,
-  onRegisterClick,
-  onCartClick,
-  onAccountClick,
-  onAdminClick,
-  onShopNow,
-}) => {
+const HomePage = ({ onShopNow, ...headerProps }) => {
   return (
     <div className="page">
-      <Header
-        onLoginClick={onLoginClick}
-        onRegisterClick={onRegisterClick}
-        onCartClick={onCartClick}
-        onAccountClick={onAccountClick}
-        onAdminClick={onAdminClick}
-      />
-
+      <Header {...headerProps} />
       <main>
         <Hero onShopNow={onShopNow} />
         <Categories />
@@ -31,7 +17,6 @@ const HomePage = ({
         <PlantCare />
         <BestSellers />
       </main>
-
       <Footer />
     </div>
   );

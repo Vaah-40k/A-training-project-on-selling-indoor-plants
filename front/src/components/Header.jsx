@@ -1,5 +1,6 @@
 import '../assets/styles/Header.css';
 import { useCart } from '../context/CartContext';
+import { jwtDecoded } from '../utils/jwtDecoded';
 
 const logo = `data:image/svg+xml;utf8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -21,40 +22,59 @@ const Header = ({
   onCartClick,
   onAccountClick,
   onAdminClick,
+  onShopClick,
+  onHomeClick,
 }) => {
   const { totalCount } = useCart();
+  const user = jwtDecoded();
+  const isAuthorized = Boolean(user);
+
+  const handleHome = (e) => {
+    e.preventDefault();
+    onHomeClick?.();
+  };
+
+  const handleShop = (e) => {
+    e.preventDefault();
+    onShopClick?.();
+  };
 
   return (
     <header className="header">
       <div className="container header__inner">
-        <a href="#home" className="header__logo">
+        <a href="#home" className="header__logo" onClick={handleHome}>
           <img src={logo} alt="GreenNest" />
           <span>GreenNest</span>
         </a>
 
         <nav className="header__nav">
-          <a href="#home">Главная</a>
-          <a href="#shop">Магазин</a>
+          <a href="#home" onClick={handleHome}>Главная</a>
+          <a href="#shop" onClick={handleShop}>Магазин</a>
           <a href="#about">О нас</a>
           <a href="#care">Уход за растениями</a>
           <a href="#blog">Блог</a>
         </nav>
 
         <div className="header__actions">
-          {/* ВРЕМЕННЫЕ кнопки — удалить после подключения ролей */}
-          <button className="btn btn--ghost" onClick={onAccountClick}>
-            Кабинет
-          </button>
-          <button className="btn btn--ghost" onClick={onAdminClick}>
-            Админ
-          </button>
-
-          <button className="btn btn--ghost" onClick={onLoginClick}>
-            Вход
-          </button>
-          <button className="btn btn--dark" onClick={onRegisterClick}>
-            Регистрация
-          </button>
+          {isAuthorized ? (
+            <>
+              <button className="btn btn--ghost" onClick={onAccountClick}>
+                Кабинет
+              </button>
+              <button className="btn btn--ghost" onClick={onAdminClick}>
+                Админ
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="btn btn--ghost" onClick={onLoginClick}>
+                Вход
+              </button>
+              <button className="btn btn--dark" onClick={onRegisterClick}>
+                Регистрация
+              </button>
+            </>
+          )}
 
           <button
             className="header__cart"

@@ -10,7 +10,6 @@ import { CartProvider } from './context/CartContext';
 import '../src/assets/styles/App.css';
 
 function App() {
-  // 'home' | 'catalog' | 'cart' | 'account' | 'admin' | 'login' | 'register'
   const [page, setPage] = useState('home');
 
   const go = (next) => {
@@ -24,6 +23,8 @@ function App() {
     onCartClick: () => go('cart'),
     onAccountClick: () => go('account'),
     onAdminClick: () => go('admin'),
+    onShopClick: () => go('catalog'),
+    onHomeClick: () => go('home'),
   };
 
   return (
@@ -49,11 +50,7 @@ function App() {
       )}
 
       {page === 'account' && (
-        <AccountPage
-          {...headerProps}
-          onBack={() => go('home')}
-          onShopNow={() => go('catalog')}
-        />
+        <AccountPage {...headerProps} onBack={() => go('home')} />
       )}
 
       {page === 'admin' && (

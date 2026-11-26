@@ -1,19 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProductModal from "../components/ProductModal";
 import { useCart } from "../context/CartContext";
 import { jwtDecoded } from "../utils/jwtDecoded";
 import "../assets/styles/Catalog.css";
-
-// --- Заглушки картинок ---
-// const placeholder = (label, color = "#e8f0e5") =>
-//   `data:image/svg+xml;utf8,${encodeURIComponent(
-//     `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
-//       <rect width="100%" height="100%" fill="${color}"/>
-//       <text x="50%" y="50%" font-family="sans-serif" font-size="22" fill="#2f4f4f" text-anchor="middle" dominant-baseline="middle">${label}</text>
-//     </svg>`,
-//   )}`;
 
 const cartAddIcon = `data:image/svg+xml;utf8,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -22,36 +13,77 @@ const cartAddIcon = `data:image/svg+xml;utf8,${encodeURIComponent(
   </svg>`,
 )}`;
 
-const CatalogPage = ({
-  onBack,
-  onLoginClick,
-  onRegisterClick,
-  onCartClick,
-  onAccountClick,
-  onAdminClick,
-  onShopNow,
-}) => {
+const PER_PAGE = 12;
+
+const getPageNumbers = (current, total) => {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const pages = new Set([1, total, current, current - 1, current + 1]);
+  const sorted = [...pages]
+    .filter((p) => p >= 1 && p <= total)
+    .sort((a, b) => a - b);
+
+  const result = [];
+  let prev = 0;
+  for (const p of sorted) {
+    if (p - prev > 1) result.push("…");
+    result.push(p);
+    prev = p;
+  }
+  return result;
+};
+
+const CatalogPage = ({ onBack, onShopNow, ...headerProps }) => {
   const [payloadUserData] = useState(() => jwtDecoded());
   const [products, setPlants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeCategory, setActiveCategory] = useState("Все");
   const [selected, setSelected] = useState(null);
+  const [page, setPage] = useState(1);
   const { addToCart } = useCart();
+  const gridRef = useRef(null);
 
-  const filtered =
-    activeCategory === "Все"
+  const filtered = useMemo(() => {
+    return activeCategory === "Все"
       ? products
       : products.filter((p) => p.category === activeCategory);
+  }, [products, activeCategory]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+  const visibleProducts = filtered.slice(
+    (page - 1) * PER_PAGE,
+    page * PER_PAGE,
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeCategory]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   const handleAdd = (product) => {
-    addToCart(product, payloadUserData.id);
-    setSelected(null);
+  addToCart(product, payloadUserData?.id);
+  setSelected(null);
+};
+
+
+  const goToPage = (next) => {
+    const clamped = Math.min(Math.max(1, next), totalPages);
+    if (clamped === page) return;
+    setPage(clamped);
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
   const categories = [
     "Все",
     ...new Set(products.map((plant) => plant.category)),
   ];
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -89,13 +121,7 @@ const CatalogPage = ({
 
   return (
     <div className="page">
-      <Header
-        onLoginClick={onLoginClick}
-        onRegisterClick={onRegisterClick}
-        onCartClick={onCartClick}
-        onAccountClick={onAccountClick}
-        onAdminClick={onAdminClick}
-      />
+      <Header {...headerProps} />
 
       <main className="catalog">
         <div className="container">
@@ -122,11 +148,12 @@ const CatalogPage = ({
             ))}
           </div>
 
-          <div className="catalog__grid">
-            {filtered.map((p) => (
+          <div className="catalog__grid" ref={gridRef}>
+            {visibleProducts.map((p) => (
               <article
                 className="catalog-card"
                 id={p.id}
+                key={p.id}
                 onClick={() => setSelected(p)}
               >
                 <div className="catalog-card__img">
@@ -142,11 +169,11 @@ const CatalogPage = ({
                     className="catalog-card__add"
                     aria-label="Добавить в корзину"
                     onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(p, payloadUserData.id);
+                    e.stopPropagation();
+                    addToCart(p, payloadUserData?.id); // ← ?.id
                     }}
-                  >
-                    <img src={cartAddIcon} alt="" />
+                      >
+                  <img src={cartAddIcon} alt="" />
                   </button>
                 </div>
               </article>
@@ -157,11 +184,46 @@ const CatalogPage = ({
             <p className="catalog__empty">В этой категории пока нет товаров.</p>
           )}
 
-          <div style={{ marginTop: 32 }}>
-            <button className="btn btn--ghost" onClick={onShopNow}>
-              Обновить каталог
-            </button>
-          </div>
+          {totalPages > 1 && (
+            <nav className="catalog__pagination" aria-label="Пагинация каталога">
+              <button
+                className="catalog__page-btn"
+                onClick={() => goToPage(page - 1)}
+                disabled={page === 1}
+                aria-label="Предыдущая страница"
+              >
+                ← Назад
+              </button>
+
+              {getPageNumbers(page, totalPages).map((item, idx) =>
+                item === "…" ? (
+                  <span className="catalog__page-ellipsis" key={`ellipsis-${idx}`}>
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    className={`catalog__page-btn ${
+                      item === page ? "is-active" : ""
+                    }`}
+                    onClick={() => goToPage(item)}
+                    aria-current={item === page ? "page" : undefined}
+                  >
+                    {item}
+                  </button>
+                ),
+              )}
+
+              <button
+                className="catalog__page-btn"
+                onClick={() => goToPage(page + 1)}
+                disabled={page === totalPages}
+                aria-label="Следующая страница"
+              >
+                Вперёд →
+              </button>
+            </nav>
+          )}
         </div>
       </main>
 

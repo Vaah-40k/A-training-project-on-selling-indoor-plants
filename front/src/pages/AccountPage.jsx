@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import { useCart } from "../context/CartContext";
 import "../assets/styles/Account.css";
 import { jwtDecoded } from "../utils/jwtDecoded";
-// --- Заглушки аватара ---
+
 const avatarPlaceholder = (label) =>
   `data:image/svg+xml;utf8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
@@ -13,7 +13,6 @@ const avatarPlaceholder = (label) =>
         text-anchor="middle" dominant-baseline="middle">${label}</text>
     </svg>`,
   )}`;
-// --- /Заглушки ---
 
 const mockpurchases = [
   {
@@ -39,17 +38,10 @@ const mockpurchases = [
   },
 ];
 
-const AccountPage = ({
-  onBack,
-  onLoginClick,
-  onRegisterClick,
-  onCartClick,
-  onShopNow,
-}) => {
-  const [tab, setTab] = useState("profile");
+const AccountPage = ({ onBack, ...headerProps }) => {
   const [payload, setPayload] = useState(() => jwtDecoded());
   const { totalCount } = useCart();
-  // --- Режим редактирования профиля ---
+
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: payload?.name ?? "",
@@ -57,8 +49,12 @@ const AccountPage = ({
     phone: payload?.phone ?? "",
   });
 
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 3;
+
+  const [dataAllPurchases, setDataAllPurchases] = useState(null);
+
   const startEditing = () => {
-    // подтягиваем актуальные значения из профиля
     setFormData({
       name: payload?.name ?? "",
       email: payload?.email ?? "",
@@ -68,7 +64,6 @@ const AccountPage = ({
   };
 
   const cancelEditing = () => {
-    // откатываем изменения
     setFormData({
       name: payload?.name ?? "",
       email: payload?.email ?? "",
@@ -78,7 +73,6 @@ const AccountPage = ({
   };
 
   const saveEditing = async () => {
-    // сохраняем изменения в локальное состояние профиля
     setPayload((prev) => ({ ...prev, ...formData }));
     formData.id_user = payload.id;
     setIsEditing(false);
@@ -101,7 +95,7 @@ const AccountPage = ({
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  // Данные заказов
+
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
@@ -110,20 +104,20 @@ const AccountPage = ({
           {},
         );
         const data = await response.json();
-        console.log(data);
-      } catch (err) {}
+        setDataAllPurchases(data);
+      } catch (err) {
+        console.log("Ошибка чтения заказов, повторите попытку позже", -err);
+      }
     };
 
     fetchPurchases();
   }, []);
 
+  console.log(dataAllPurchases);
+
   return (
     <div className="page">
-      <Header
-        onLoginClick={onLoginClick}
-        onRegisterClick={onRegisterClick}
-        onCartClick={onCartClick}
-      />
+      <Header {...headerProps} />
 
       <main className="account">
         <div className="container">
@@ -143,163 +137,152 @@ const AccountPage = ({
             </div>
             <button
               className="btn btn--ghost account__logout"
-              onClick={
-                () => localStorage.removeItem("JWTtoken")
-                // TODO: Тут тоже нужен редирект на авторизацию
-              }
+              onClick={() => localStorage.removeItem("JWTtoken")}
             >
               Выйти
             </button>
           </div>
 
-          <div className="account__tabs">
-            <button
-              className={`account__tab ${tab === "profile" ? "is-active" : ""}`}
-              onClick={() => setTab("profile")}
-            >
-              Профиль
-            </button>
-            <button
-              className={`account__tab ${tab === "purchases" ? "is-active" : ""}`}
-              onClick={() => setTab("purchases")}
-            >
-              Заказы
-            </button>
-          </div>
+          <div className="account__grid">
+            <section className="account-card">
+              <h2 className="account-card__title">Личные данные</h2>
 
-          {tab === "profile" && (
-            <div className="account__grid">
-              <section className="account-card">
-                <h2 className="account-card__title">Личные данные</h2>
+              {isEditing ? (
+                <>
+                  <label className="account-card__row">
+                    <span>Имя: </span>
+                    <input
+                      type="text"
+                      name="name"
+                      className="account-card__input"
+                      value={formData.name}
+                      onChange={handleChange}
+                    />
+                  </label>
 
-                {isEditing ? (
-                  <>
-                    <label className="account-card__row">
-                      <span>Имя</span>
-                      <input
-                        type="text"
-                        name="name"
-                        className="account-card__input"
-                        value={formData.name}
-                        onChange={handleChange}
-                      />
-                    </label>
+                  <label className="account-card__row">
+                    <span>Email: </span>
+                    <input
+                      type="email"
+                      name="email"
+                      className="account-card__input"
+                      value={formData.email}
+                      onChange={handleChange}
+                    />
+                  </label>
 
-                    <label className="account-card__row">
-                      <span>Email</span>
-                      <input
-                        type="email"
-                        name="email"
-                        className="account-card__input"
-                        value={formData.email}
-                        onChange={handleChange}
-                      />
-                    </label>
+                  <label className="account-card__row">
+                    <span>Телефон: </span>
+                    <input
+                      type="tel"
+                      name="phone"
+                      className="account-card__input"
+                      value={formData.phone}
+                      onChange={handleChange}
+                    />
+                  </label>
 
-                    <label className="account-card__row">
-                      <span>Телефон</span>
-                      <input
-                        type="tel"
-                        name="phone"
-                        className="account-card__input"
-                        value={formData.phone}
-                        onChange={handleChange}
-                      />
-                    </label>
-
-                    <div className="account-card__actions">
-                      <button
-                        className="btn btn--ghost"
-                        onClick={cancelEditing}
-                      >
-                        Отменить
-                      </button>
-                      <button className="btn btn--dark" onClick={saveEditing}>
-                        Сохранить
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="account-card__row">
-                      <span>Имя</span>
-                      <strong>{payload.name}</strong>
-                    </div>
-                    <div className="account-card__row">
-                      <span>Email</span>
-                      <strong>{payload.email}</strong>
-                    </div>
-                    <div className="account-card__row">
-                      <span>Телефон</span>
-                      <strong>{payload.phone}</strong>
-                    </div>
-                    <button
-                      className="btn btn--dark account-card__btn"
-                      onClick={startEditing}
-                    >
-                      Редактировать
+                  <div className="account-card__actions">
+                    <button className="btn btn--ghost" onClick={cancelEditing}>
+                      Отменить
                     </button>
-                  </>
-                )}
-              </section>
+                    <button className="btn btn--dark" onClick={saveEditing}>
+                      Сохранить
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="account-card__row">
+                    <span>Имя</span>
+                    <strong>{payload.name}</strong>
+                  </div>
+                  <div className="account-card__row">
+                    <span>Email</span>
+                    <strong>{payload.email}</strong>
+                  </div>
+                  <div className="account-card__row_t">
+                    <span>Телефон</span>
+                    <strong>{payload.phone}</strong>
+                  </div>
+                  <button
+                    className="btn btn--dark account-card__btn"
+                    onClick={startEditing}
+                  >
+                    Редактировать
+                  </button>
+                </>
+              )}
+            </section>
 
-              <section className="account-card">
-                <h2 className="account-card__title">Корзина</h2>
-                <p className="account-card__text">
-                  {totalCount > 0
-                    ? `В корзине ${totalCount} товар(ов).`
-                    : "Корзина пуста."}
-                </p>
-                <button
-                  className="btn btn--light account-card__btn"
-                  onClick={onShopNow}
-                >
-                  Перейти в каталог
-                </button>
-              </section>
-
-              <section className="account-card">
-                <h2 className="account-card__title">Настройки</h2>
-                <p className="account-card__text">
-                  Управление уведомлениями и подпиской.
-                </p>
-                <button className="btn btn--ghost account-card__btn">
-                  Настроить
-                </button>
-              </section>
-            </div>
-          )}
-
-          {tab === "purchases" && (
-            <div className="account__purchases">
+            <section className="account-card account__purchases">
+              <h2 className="account-card__title">Заказы</h2>
               {mockpurchases.length === 0 ? (
                 <p className="account__empty">Заказов пока нет.</p>
               ) : (
-                mockpurchases.map((o) => (
-                  <article className="order" key={o.id}>
-                    <div className="order__head">
-                      <div>
-                        <h3 className="order__id">Заказ {o.id}</h3>
-                        <span className="order__date">{o.date}</span>
-                      </div>
-                      <span
-                        className={`order__status ${
-                          o.status === "Доставлен" ? "is-done" : "is-progress"
-                        }`}
+                <>
+                  {mockpurchases
+                    .slice((page - 1) * PER_PAGE, page * PER_PAGE)
+                    .map((o) => (
+                      <article className="order" key={o.id}>
+                        <div className="order__head">
+                          <div>
+                            <h3 className="order__id">Заказ {o.id}</h3>
+                            <span className="order__date">{o.date}</span>
+                          </div>
+                          <span
+                            className={`order__status ${
+                              o.status === "Доставлен" ? "is-done" : "is-progress"
+                            }`}
+                          >
+                            {o.status}
+                          </span>
+                        </div>
+                        <p className="order__items">{o.items.join(", ")}</p>
+                        <div className="order__foot">
+                          <span>Сумма: {o.total}</span>
+                          <button className="btn btn--ghost">Подробнее</button>
+                        </div>
+                      </article>
+                    ))}
+
+                  {mockpurchases.length > PER_PAGE && (
+                    <div className="pagination">
+                      <button
+                        className="pagination__btn"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
                       >
-                        {o.status}
+                        ← Назад
+                      </button>
+
+                      <span className="pagination__info">
+                        Страница {page} из{" "}
+                        {Math.ceil(mockpurchases.length / PER_PAGE)}
                       </span>
+
+                      <button
+                        className="pagination__btn"
+                        onClick={() =>
+                          setPage((p) =>
+                            Math.min(
+                              Math.ceil(mockpurchases.length / PER_PAGE),
+                              p + 1,
+                            ),
+                          )
+                        }
+                        disabled={
+                          page === Math.ceil(mockpurchases.length / PER_PAGE)
+                        }
+                      >
+                        Вперёд →
+                      </button>
                     </div>
-                    <p className="order__items">{o.items.join(", ")}</p>
-                    <div className="order__foot">
-                      <span>Сумма: {o.total}</span>
-                      <button className="btn btn--ghost">Подробнее</button>
-                    </div>
-                  </article>
-                ))
+                  )}
+                </>
               )}
-            </div>
-          )}
+            </section>
+          </div>
         </div>
       </main>
 

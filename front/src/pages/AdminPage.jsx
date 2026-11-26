@@ -1,16 +1,15 @@
-import { useState } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import '../assets/styles/Admin.css';
+import { useState, useEffect } from "react";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import "../assets/styles/Admin.css";
 
-// --- Заглушка аватара ---
 const avatarPlaceholder = (label) =>
   `data:image/svg+xml;utf8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
       <circle cx="60" cy="60" r="60" fill="#1e3a2b"/>
       <text x="50%" y="50%" font-family="sans-serif" font-size="40" fill="#e8f0e5"
         text-anchor="middle" dominant-baseline="middle">${label}</text>
-    </svg>`
+    </svg>`,
   )}`;
 
 const productPlaceholder = (label) =>
@@ -19,74 +18,96 @@ const productPlaceholder = (label) =>
       <rect width="100%" height="100%" fill="#e8f0e5"/>
       <text x="50%" y="50%" font-family="sans-serif" font-size="12" fill="#2f4f4f"
         text-anchor="middle" dominant-baseline="middle">${label}</text>
-    </svg>`
+    </svg>`,
   )}`;
-// --- /Заглушка ---
 
 const mockAdmin = {
-  name: 'Анна Админова',
-  email: 'admin@greennest.com',
-  role: 'Администратор',
-  joined: '01 января 2026',
-  avatar: avatarPlaceholder('АА'),
+  name: "Анна Админова",
+  email: "admin@greennest.com",
+  role: "Администратор",
+  joined: "01 января 2026",
+  avatar: avatarPlaceholder("АА"),
 };
 
 const mockStats = [
-  { label: 'Пользователи', value: '1 248', trend: '+12 за неделю' },
-  { label: 'Заказы', value: '386', trend: '+24 за неделю' },
-  { label: 'Выручка', value: '$12 480', trend: '+$1 120 за неделю' },
-  { label: 'Товары', value: '52', trend: '3 на модерации' },
+  { label: "Пользователи", value: "1 248", trend: "+12 за неделю" },
+  { label: "Заказы", value: "386", trend: "+24 за неделю" },
+  { label: "Выручка", value: "$12 480", trend: "+$1 120 за неделю" },
+  { label: "Товары", value: "52", trend: "3 на модерации" },
 ];
 
 const mockProducts = [
-  { id: 1, name: 'Snake Plant', price: '$24.99', category: 'Indoor', stock: 34, status: 'Активен' },
-  { id: 2, name: 'Peace Lily', price: '$22.99', category: 'Indoor', stock: 12, status: 'Активен' },
-  { id: 3, name: 'Monstera', price: '$29.99', category: 'Indoor', stock: 0, status: 'Нет в наличии' },
-  { id: 4, name: 'ZZ Plant', price: '$26.99', category: 'Indoor', stock: 21, status: 'Активен' },
-  { id: 5, name: 'Aloe Vera', price: '$18.99', category: 'Succulents', stock: 48, status: 'Активен' },
-  { id: 6, name: 'Lavender', price: '$16.99', category: 'Outdoor', stock: 5, status: 'Мало на складе' },
+  { id: 1, name: "Snake Plant", price: "$24.99", category: "Indoor", stock: 34, status: "Активен" },
+  { id: 2, name: "Peace Lily", price: "$22.99", category: "Indoor", stock: 12, status: "Активен" },
+  { id: 3, name: "Monstera", price: "$29.99", category: "Indoor", stock: 0, status: "Нет в наличии" },
+  { id: 4, name: "ZZ Plant", price: "$26.99", category: "Indoor", stock: 21, status: "Активен" },
+  { id: 5, name: "Aloe Vera", price: "$18.99", category: "Succulents", stock: 48, status: "Активен" },
+  { id: 6, name: "Lavender", price: "$16.99", category: "Outdoor", stock: 5, status: "Мало на складе" },
 ];
 
 const mockOrders = [
-  { id: 'GN-1042', user: 'Иван Зелёный', date: '18.11.2026', total: '$49.98', status: 'Доставлен' },
-  { id: 'GN-1041', user: 'Мария Цветова', date: '18.11.2026', total: '$29.99', status: 'В пути' },
-  { id: 'GN-1040', user: 'Пётр Листов', date: '17.11.2026', total: '$76.97', status: 'Обрабатывается' },
-  { id: 'GN-1039', user: 'Ольга Росток', date: '17.11.2026', total: '$22.99', status: 'Доставлен' },
-  { id: 'GN-1038', user: 'Сергей Куст', date: '16.11.2026', total: '$18.99', status: 'Отменён' },
+  { id: "GN-1042", user: "Иван Зелёный", date: "18.11.2026", total: "$49.98", status: "Доставлен" },
+  { id: "GN-1041", user: "Мария Цветова", date: "18.11.2026", total: "$29.99", status: "В пути" },
+  { id: "GN-1040", user: "Пётр Листов", date: "17.11.2026", total: "$76.97", status: "Обрабатывается" },
+  { id: "GN-1039", user: "Ольга Росток", date: "17.11.2026", total: "$22.99", status: "Доставлен" },
+  { id: "GN-1038", user: "Сергей Куст", date: "16.11.2026", total: "$18.99", status: "Отменён" },
 ];
 
 const mockUsers = [
-  { id: 1, name: 'Иван Зелёный', email: 'ivan@greennest.com', role: 'Покупатель', orders: 8, joined: '12.03.2026' },
-  { id: 2, name: 'Мария Цветова', email: 'maria@greennest.com', role: 'Покупатель', orders: 3, joined: '02.05.2026' },
-  { id: 3, name: 'Пётр Листов', email: 'petr@greennest.com', role: 'Покупатель', orders: 12, joined: '21.01.2026' },
-  { id: 4, name: 'Анна Админова', email: 'admin@greennest.com', role: 'Администратор', orders: 0, joined: '01.01.2026' },
-  { id: 5, name: 'Ольга Росток', email: 'olga@greennest.com', role: 'Покупатель', orders: 5, joined: '14.07.2026' },
+  { id: 1, name: "Иван Зелёный", email: "ivan@greennest.com", role: "Покупатель", orders: 8, joined: "12.03.2026" },
+  { id: 2, name: "Мария Цветова", email: "maria@greennest.com", role: "Покупатель", orders: 3, joined: "02.05.2026" },
+  { id: 3, name: "Пётр Листов", email: "petr@greennest.com", role: "Покупатель", orders: 12, joined: "21.01.2026" },
+  { id: 4, name: "Анна Админова", email: "admin@greennest.com", role: "Администратор", orders: 0, joined: "01.01.2026" },
+  { id: 5, name: "Ольга Росток", email: "olga@greennest.com", role: "Покупатель", orders: 5, joined: "14.07.2026" },
 ];
 
 const statusClass = (status) => {
-  if (status === 'Доставлен' || status === 'Активен') return 'is-done';
-  if (status === 'В пути' || status === 'Обрабатывается' || status === 'Мало на складе')
-    return 'is-progress';
-  return 'is-danger';
+  if (status === "Доставлен" || status === "Активен") return "is-done";
+  if (
+    status === "В пути" ||
+    status === "Обрабатывается" ||
+    status === "Мало на складе"
+  )
+    return "is-progress";
+  return "is-danger";
 };
 
-const AdminPage = ({
-  onBack,
-  onLoginClick,
-  onRegisterClick,
-  onCartClick,
-  onAccountClick,
-}) => {
-  const [tab, setTab] = useState('dashboard'); // 'dashboard' | 'products' | 'orders' | 'users'
+const AdminPage = ({ onBack, ...headerProps }) => {
+  const [tab, setTab] = useState("dashboard");
+  const [dataAllPurchases, setDataAllPurchases] = useState(null);
+  const [dataAllUsers, setDataAllUsers] = useState(null);
+
+  useEffect(() => {
+    const fetchPurchases = async () => {
+      const adminId = -1;
+      try {
+        const response = await fetch(
+          `/api/show_all_purchases_user/${adminId}`,
+          {},
+        );
+        const data = await response.json();
+        setDataAllPurchases(data);
+      } catch (err) {
+        console.log("Ошибка чтения заказов, повторите попытку позже", -err);
+      }
+    };
+
+    fetchPurchases();
+
+    const fetchGetAllUser = async () => {
+      const respone = await fetch("/api/show_all_users");
+      const data = await respone.json();
+      setDataAllUsers(data);
+    };
+    fetchGetAllUser();
+  }, []);
+
+  console.log(dataAllPurchases);
+  console.log(dataAllUsers);
 
   return (
     <div className="page">
-      <Header
-        onLoginClick={onLoginClick}
-        onRegisterClick={onRegisterClick}
-        onCartClick={onCartClick}
-        onAccountClick={onAccountClick}
-      />
+      <Header {...headerProps} />
 
       <main className="admin">
         <div className="container">
@@ -111,14 +132,14 @@ const AdminPage = ({
 
           <div className="admin__tabs">
             {[
-              ['dashboard', 'Обзор'],
-              ['products', 'Товары'],
-              ['orders', 'Заказы'],
-              ['users', 'Пользователи'],
+              ["dashboard", "Обзор"],
+              ["products", "Товары"],
+              ["orders", "Заказы"],
+              ["users", "Пользователи"],
             ].map(([key, label]) => (
               <button
                 key={key}
-                className={`admin__tab ${tab === key ? 'is-active' : ''}`}
+                className={`admin__tab ${tab === key ? "is-active" : ""}`}
                 onClick={() => setTab(key)}
               >
                 {label}
@@ -126,7 +147,7 @@ const AdminPage = ({
             ))}
           </div>
 
-          {tab === 'dashboard' && (
+          {tab === "dashboard" && (
             <>
               <div className="admin__stats">
                 {mockStats.map((s) => (
@@ -147,7 +168,9 @@ const AdminPage = ({
                         <span className="admin-table__strong">{o.id}</span>
                         <span>{o.user}</span>
                         <span>{o.total}</span>
-                        <span className={`admin-badge ${statusClass(o.status)}`}>
+                        <span
+                          className={`admin-badge ${statusClass(o.status)}`}
+                        >
                           {o.status}
                         </span>
                       </div>
@@ -171,7 +194,7 @@ const AdminPage = ({
             </>
           )}
 
-          {tab === 'products' && (
+          {tab === "products" && (
             <section className="admin-card">
               <div className="admin-card__head">
                 <h2 className="admin-card__title">Товары</h2>
@@ -182,7 +205,7 @@ const AdminPage = ({
                   <div className="admin-table__row" key={p.id}>
                     <img
                       className="admin-table__thumb"
-                      src={productPlaceholder(p.name.split(' ')[0])}
+                      src={productPlaceholder(p.name.split(" ")[0])}
                       alt={p.name}
                     />
                     <span className="admin-table__strong">{p.name}</span>
@@ -198,7 +221,7 @@ const AdminPage = ({
             </section>
           )}
 
-          {tab === 'orders' && (
+          {tab === "orders" && (
             <section className="admin-card">
               <h2 className="admin-card__title">Заказы</h2>
               <div className="admin-table admin-table--orders">
@@ -217,7 +240,7 @@ const AdminPage = ({
             </section>
           )}
 
-          {tab === 'users' && (
+          {tab === "users" && (
             <section className="admin-card">
               <h2 className="admin-card__title">Пользователи</h2>
               <div className="admin-table admin-table--users">

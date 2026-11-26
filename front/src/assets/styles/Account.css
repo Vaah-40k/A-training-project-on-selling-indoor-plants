@@ -74,10 +74,20 @@
 
 .account__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 2fr;
   gap: 20px;
+  align-items: start;
 }
 
+.account__purchases {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.account__purchases .order {
+  margin: 0;
+}
 .account-card {
   background: #fff;
   border-radius: var(--radius);
@@ -95,8 +105,18 @@
   justify-content: space-between;
   font-size: 0.9rem;
   color: #555;
-  padding: 8px 0;
+  padding: 5% 0;
   border-bottom: 1px solid #eee;
+
+}
+.account-card__row_t {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #555;
+  padding: 5% 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 35%;
 }
 .account-card__row strong {
   color: var(--color-dark);
@@ -187,6 +207,12 @@
   }
 }
 
+@media (max-width: 900px) {
+  .account__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .account-card__input {
   flex: 1;
   min-width: 0;
@@ -212,4 +238,46 @@
 
 .account-card__actions .btn {
   flex: 1;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.pagination__btn {
+  background: #fff;
+  border: 1px solid #dfe6dc;
+  color: var(--color-green);
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.pagination__btn:hover:not(:disabled) {
+  border-color: var(--color-green);
+  background: var(--color-light-green);
+}
+
+.pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination__info {
+  font-size: 0.85rem;
+  color: #666;
+}
+.account-card__input{
+  margin-left: 5%;
 }
